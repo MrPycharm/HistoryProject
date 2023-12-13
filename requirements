@@ -1,0 +1,12 @@
+import sys
+
+from PyQt5 import uic
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView
+from PyQt5.QtGui import QColor, QBrush, QFont
+from PyQt5.QtCore import Qt
+import sqlite3
+
+Приложения: 
+    SQLiteStudio
+    Qt Designer
