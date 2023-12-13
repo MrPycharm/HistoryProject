@@ -1,0 +1,67 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt5.QtGui import QPainter, QColor, QFont
+from PyQt5.QtCore import Qt
+import sqlite3
+
+
+class TimelineWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Timeline")
+        self.setGeometry(100, 100, 800, 600)
+        self.show()
+
+    def paintEvent(self, event):
+        qp = QPainter(self)
+        qp.setPen(Qt.black)
+
+        conn = sqlite3.connect('HistoryProject.sqlite')
+        cursor = conn.cursor()
+
+        # Fetching data from the database
+        cursor.execute("SELECT description FROM roles")
+        roles_data = cursor.fetchall()
+        print(f"roles_data: {roles_data}")
+        cursor.execute("SELECT name, start, end, role_id FROM object")
+        objects_data = cursor.fetchall()
+        print(objects_data)
+        print("дошел")
+        conn.close()
+
+        font = QFont("Arial", 10)
+        qp.setFont(font)
+
+        timeline_start = 1800  # Define the timeline start year
+        timeline_end = 2023  # Define the timeline end year
+
+        timeline_width = self.width() - 100
+        timeline_height = self.height() - 100
+        bar_width = timeline_width / (timeline_end - timeline_start + 1)
+        for obj in objects_data:
+            name, start, end, role_id = obj
+            # Fetching role color from roles_data using role_id
+            role_color = roles_data[role_id - 1][0] #.split(',')
+
+            print(f"role_color: {role_color}")
+            role_color = QColor(123, 24, 76)#int(role_color[0])) #, int(role_color[1]), int(role_color[2]))
+            # Calculating start and end positions
+            x_start = int((start - timeline_start) * bar_width) + 50
+            x_end = int((end - timeline_start) * bar_width) + 50
+            # Drawing date plates
+            qp.setBrush(role_color)
+            qp.drawRect(x_start, timeline_height // 2 - 10, x_end - x_start, 20)
+            # # Drawing text
+            qp.setPen(Qt.white)
+            qp.drawText(x_start, timeline_height // 2 -10, x_end - x_start, 20, Qt.AlignCenter, name)
+            timeline_width -= 45
+            timeline_height -= 45
+
+    def except_hook(cls, exception, traceback):
+        sys.__excepthook__(cls, exception, traceback)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = TimelineWindow()
+    window.show()
+    sys.exit(app.exec())
