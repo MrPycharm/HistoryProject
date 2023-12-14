@@ -1,2 +1,2 @@
 # HistoryProject
-PyQT5 LMS
+PyQT5 LMS проект Александра Шиленко
