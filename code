@@ -1,4 +1,3 @@
-
 import csv
 from PyQt5 import uic
 import sys
@@ -12,9 +11,7 @@ class History(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('project3.ui', self)
-        # self.a = QPushButton("а", self)
         self.pushButton.clicked.connect(self.open_add_form)
-        # self.a.clicked.connect(self.open_add_form)
         self.pushButton.show()
         self.pushButton_4.clicked.connect(self.open_del_form)
         self.pushButton_4.show()
@@ -26,22 +23,27 @@ class History(QMainWindow):
         self.pushButton_csv.show()
 
     def open_add_form(self):
+        # добавление вручную
         self.add_form = Add_manualy()
         self.add_form.show()
 
     def open_del_form(self):
+        # удаление по имени
         self.del_form = Delete()
         self.del_form.show()
 
     def open_roles_form(self):
+        # добавляем/удаляем роль
         self.roles_form = Roles()
         self.roles_form.show()
 
     def open_main_form(self):
+        # вывод информации
         self.main_form = TimelineWindow()
         self.main_form.show()
 
     def open_csv_form(self):
+        # добавление через csv файл
         self.csv_form = Add_csv()
         self.csv_form.show()
 
@@ -66,16 +68,14 @@ class Add_manualy(QMainWindow):
     def scan(self):
         input_name, input_start, input_end, input_role = self.lineEdit.text(), int(self.lineEdit_2.text()), \
                                                          int(self.lineEdit_3.text()), self.comboBox.currentText()
-        # print(input_name, input_start, input_end, input_role)
+        # получение всё информации
         self.add_manly(input_name, input_start, input_end, input_role)
 
     def add_manly(self, name, start, end, role):
-        print("дошёл")
         conn = sqlite3.connect('HistoryProject.sqlite')
         cursor = conn.cursor()
-        # idid = f"SELECT id FROM roles WHERE '{role}' == description"
         a = cursor.execute(f"SELECT id FROM roles WHERE '{role}' == description").fetchall()[0][0]
-        # print(a)
+        # достаём из roles id роли
         conn.commit()
         conn.close()
 
@@ -83,7 +83,7 @@ class Add_manualy(QMainWindow):
         cursor2 = conn.cursor()
         sql = "INSERT INTO object (name, start, end, role_id) VALUES (?, ?, ?, ?)"
         values = (name, start, end, a)
-        print(f"values: {values}")
+        # добавляем в object
         cursor2.execute(sql, values)
         conn.commit()
         conn.close()
@@ -100,87 +100,42 @@ class Add_csv(QMainWindow):
         self.close()
 
     def scan_csv(self):
-        outputt = ""
         file = self.lineEdit_csv.text()
         with open(f'{file}.csv', 'r') as f:
             reader = csv.reader(f, delimiter=';')
-            # считываем файл
-            # for f_elem in reader:
-            #     if f_elem[-1] in "0123456789":
-            #         check = True
-            #         break
-            #     else:
-            #         check = False
-            #         break
-            # print(check)
-            # if check:
             for row in reader:
-                # print(row)
+                # построчно считываем информацию
                 name_csv, start_csv, end_csv, role_csv = row[:-1]
                 con_csv = sqlite3.connect('HistoryProject.sqlite')
                 cursor_csv = con_csv.cursor()
 
-                print(f"role_csv: {role_csv}")
-                print(role_csv.isdigit())
-                if not role_csv.isdigit(): # select роли(название)
-                    # idid = f"SELECT id FROM roles WHERE '{role}' == description"
-                    print(f" путь 1    name_csv: {name_csv},     role_csv: {role_csv} ")
+                if not role_csv.isdigit():
+                    # select роли(название)
                     a = cursor_csv.execute(f"SELECT * FROM roles WHERE description == '{role_csv}' ").fetchall()
-                else: # select роли(id)
-                    print(f" путь 2    name_csv: {name_csv},     role_csv: {role_csv} ")
+                else:
+                    # select роли(id)
                     a = cursor_csv.execute(f"SELECT * FROM roles WHERE id == '{role_csv}' ").fetchall()
-                    # print(a)
 
                 if not a:
-                    # self.trans = Roles()
-
-                    # self.trans.edit_role(role_csv)
-# '--------------------------------------------------------------------------------------'
+                    # если нет такой роли
                     cursor_csv.execute("INSERT INTO roles (description, color) VALUES (?, ?)", (role_csv, row[-1]))
+                    # добавление роли в roles
 
-                    # try:
-                    #     cur_role.execute(f"""DELETE FROM roles WHERE description = '{role}' """)
-                    #
-                    # except:
-                    #     print("______")
-                    #     color_role = self.lineEdit_role_color.text()
-                    #     cur_role.execute("INSERT INTO roles (description, color) VALUES (?, ?)", (role, color_role))
-
-
-
-                # self.trans2 = Add_manualy()
-                # self.trans2.add_manly(name_csv, start_csv, end_csv, role_csv)
-
-                b = cursor_csv.execute(f"SELECT id FROM roles WHERE '{role_csv}' == description").fetchall()[0][0]
-
-                sql = "INSERT INTO object (name, start, end, role_id) VALUES (?, ?, ?, ?)"
+                b = cursor_csv.execute(f"SELECT id FROM roles WHERE description == '{role_csv}'").fetchall()[0][0]
                 values = (name_csv, start_csv, end_csv, b)
-                # print(f"values: {values}")
+                # добавляем в objects
                 cursor_csv.execute("INSERT INTO object (name, start, end, role_id) VALUES (?, ?, ?, ?)", values)
-
                 con_csv.commit()
                 con_csv.close()
 
-
-        outputt = "дошел"
+        # вывод информации
+        outputt = "Получилось"
         self.info_csv.setFont(QFont("Arial", 12))
         self.info_csv.setText(outputt)
         self.info_csv.setStyleSheet("color: #02ff74")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-class Roles(QMainWindow):
+class Roles(QMainWindow):  # добавление/удаление роли
     def __init__(self):
         super().__init__()
         uic.loadUi('roles.ui', self)
@@ -199,27 +154,20 @@ class Roles(QMainWindow):
         # проверка на наличие роли
         inp = f"SELECT * FROM roles WHERE description == '{role}' "
         check = cur_role.execute(inp).fetchall()
-        print(check)
+        # print(check)
 
         if check:
             cur_role.execute(f"""DELETE FROM roles WHERE description = '{role}' """)
         else:
+            # добавляем роль, если её нет в roles
             color_role = self.lineEdit_role_color.text()
             cur_role.execute("INSERT INTO roles (description, color) VALUES (?, ?)", (role, color_role))
-
-        # try:
-        #     cur_role.execute(f"""DELETE FROM roles WHERE description = '{role}' """)
-        #
-        # except:
-        #     print("______")
-        #     color_role = self.lineEdit_role_color.text()
-        #     cur_role.execute("INSERT INTO roles (description, color) VALUES (?, ?)", (role, color_role))
 
         con_role.commit()
         con_role.close()
 
 
-class Delete(QMainWindow):
+class Delete(QMainWindow):  # удаление по имени
     def __init__(self):
         super().__init__()
         uic.loadUi('del.ui', self)
@@ -235,23 +183,27 @@ class Delete(QMainWindow):
         conn = sqlite3.connect("HistoryProject.sqlite")
         cur = conn.cursor()
 
+        # удаление по имени из object
+        test = cur.execute(f"""SELECT * FROM object WHERE name == '{name}' """).fetchall()
         cur.execute(f"""DELETE FROM object WHERE name = '{name}' """)
         conn.commit()
         conn.close()
+        if test:
+            self.info.setText("Выполнено")
+        else:
+            self.info.setText("Ошибка, попробуйте снова")
+
         self.info.setFont(QFont("Arial", 12))
-        self.info.setText("выполнено")
         self.info.setStyleSheet("color: #02ff74")
 
 
-'''def goog(arg):                       пример
-    print(f"It's work! {arg}")'''
-
-
-class TimelineWindow(QMainWindow):
+class TimelineWindow(QMainWindow):  # вывод информации (main)
     def __init__(self):
         super().__init__()
+        # создание поля (фона)
         self.setWindowTitle("Timeline")
         self.setGeometry(100, 100, 800, 600)
+        self.setStyleSheet("background-color: rgb(217, 217, 211);")
         self.show()
 
     def paintEvent(self, event):
@@ -261,55 +213,72 @@ class TimelineWindow(QMainWindow):
         conn = sqlite3.connect('HistoryProject.sqlite')
         cursor = conn.cursor()
 
-        # Fetching data from the database
+        # получение названия ролей из roles
         cursor.execute("SELECT description FROM roles")
         roles_data = cursor.fetchall()
-        print(f"roles_data: {roles_data}")
         cursor.execute("SELECT name, start, end, role_id FROM object")
+        # получение всей информации из object
         objects_data = cursor.fetchall()
-        print(objects_data)
-        print("дошел")
         conn.close()
 
         font = QFont("Arial", 10)
         qp.setFont(font)
 
-        timeline_start = 1800  # Define the timeline start year
-        timeline_end = 2023  # Define the timeline end year
+        timeline_start = 1800  # timeline start year
+        timeline_end = 2023  # timeline end year
 
-        timeline_width = self.width() - 100
+        timeline_width = self.width() - 50
         timeline_height = 30
         bar_width = timeline_width / (timeline_end - timeline_start + 1)
 
+        storage = {}  # создание словаря для хранения границ объектов
         for obj in objects_data:
             name, start, end, role_id = obj
-
             con_r = sqlite3.connect('HistoryProject.sqlite')
             cursor_r = con_r.cursor()
             colour = cursor_r.execute(f"SELECT color FROM roles WHERE id == '{role_id}' ").fetchall()[0][0].split(',')
-            print(f"цвет: {colour}")
-            role_color = QColor(int(colour[0]), int(colour[1]),
-                                int(colour[2]))  # int(role_color[0])) #, int(role_color[1]), int(role_color[2]))
-            # role_color = QColor(123, 24, 76)
-            print(f"цвет: {role_color}")
+            role_color = QColor(int(colour[0]), int(colour[1]), int(colour[2]))
             con_r.close()
-            # Calculating start and end positions
+
+            # подготовка к рисованию
             x_start = int((start - timeline_start) * bar_width) + 50
             x_end = int((end - timeline_start) * bar_width) + 50
-            # Drawing date plates
+
             qp.setBrush(role_color)
-            qp.drawRect(x_start, timeline_height // 2 - 10, x_end - x_start, 20)
-            # # Drawing text
             qp.setPen(Qt.white)
-            qp.drawText(x_start, timeline_height // 2 - 10, x_end - x_start, 20, Qt.AlignCenter, name)
-            timeline_width -= 45
-            timeline_height += 45
+
+            # функция for для получения нужной строчки (так, чтобы информация друг на друга не наслаивалась)
+            flag = False
+            for key, coords in storage.items():
+                if flag:
+                    break
+                for tupl in coords:
+                    if tupl[0] < start < tupl[1] or tupl[0] < end < tupl[1] or start < tupl[0] and end > tupl[1]:
+                        # проверка границ
+                        break
+                else:  # если программа проработала нормально, т.е. ни в одном случае границы не пересекаются, то:
+                    qp.drawRect(x_start, key // 2 - 10, x_end - x_start, 20)
+                    qp.drawText(x_start, key // 2 - 10, x_end - x_start, 20, Qt.AlignCenter, name)
+                    storage[key].append((start, end))
+                    # добавление границ в storage
+                    flag = True
+                    break
+            else:
+                if storage:
+                    # переход на новую строку
+                    height = max(storage.keys()) + 45
+                    qp.drawRect(x_start, height // 2 - 10, x_end - x_start, 20)
+                    qp.drawText(x_start, height // 2 - 10, x_end - x_start, 20, Qt.AlignCenter, name)
+                    storage[height] = [(start, end)]
+                else:
+                    # storage пуст  -  происходит один раз в самом начале
+                    qp.drawRect(x_start, timeline_height // 2 - 10, x_end - x_start, 20)
+                    qp.drawText(x_start, timeline_height // 2 - 10, x_end - x_start, 20, Qt.AlignCenter, name)
+                    storage[timeline_height] = [(start, end)]
 
     def except_hook(cls, exception, traceback):
         sys.__excepthook__(cls, exception, traceback)
 
-
-# print(Add_csv.scan_csv())
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
