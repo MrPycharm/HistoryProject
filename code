@@ -101,7 +101,7 @@ class Add_csv(QMainWindow):
 
     def scan_csv(self):
         file = self.lineEdit_csv.text()
-        with open(f'{file}.csv', 'r') as f:
+        with open(f'{file}.csv', encoding='utf8') as f:
             reader = csv.reader(f, delimiter=';')
             print(reader)
             for row in reader:
