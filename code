@@ -101,8 +101,9 @@ class Add_csv(QMainWindow):
 
     def scan_csv(self):
         file = self.lineEdit_csv.text()
-        with open(f'{file}.csv', encoding='utf8') as f:
+        with open(f'{file}.csv', 'r') as f:
             reader = csv.reader(f, delimiter=';')
+            print(reader)
             for row in reader:
                 # построчно считываем информацию
                 name_csv, start_csv, end_csv, role_csv = row[:-1]
@@ -275,9 +276,6 @@ class TimelineWindow(QMainWindow):  # вывод информации (main)
                     qp.drawRect(x_start, timeline_height // 2 - 10, x_end - x_start, 20)
                     qp.drawText(x_start, timeline_height // 2 - 10, x_end - x_start, 20, Qt.AlignCenter, name)
                     storage[timeline_height] = [(start, end)]
-
-    def except_hook(cls, exception, traceback):
-        sys.__excepthook__(cls, exception, traceback)
 
 
 if __name__ == '__main__':
